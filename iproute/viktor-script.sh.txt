@@ -1,0 +1,30 @@
+IP1="185.12.5.172"
+NM1="255.255.255.0"
+NW1="185.12.5.0"
+PR1="24"
+GW1="185.12.5.1"
+
+IP2="178.22.65.107"
+NM2="255.255.248.0"
+NW2="178.22.65.0"
+PR2="21"
+GW2="178.22.64.1"
+
+ifconfig eth0 $IP1 netmask $NM1
+ifconfig eth1 $IP2 netmask $NM2
+
+route add default gw $GW1
+
+echo "102 WAN2" >> /etc/iproute2/rt_tables
+echo "101 WAN1" >> /etc/iproute2/rt_tables
+
+#first one
+ip route add $NW1/$PR1 dev eth0 src $IP1 table WAN1
+ip route add default via $GW1 table WAN1
+ip route add $NW1/$PR1 dev eth0 src $IP1
+ip rule add from $IP1 table WAN1
+#second one
+ip route add $NW2/$PR2 dev eth1 src $IP2 table WAN2
+ip route add default via $GW2 table WAN2
+ip route add $NW2/$PR2 dev eth1 src $IP2
+ip rule add from $IP2 table WAN2
