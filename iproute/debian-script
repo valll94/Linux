@@ -1,0 +1,22 @@
+#/bin/bash
+i=1
+N=1
+while read -r line
+do
+interface["$i"]="$( ifconfig -a | grep eth| awk -v N="$N" 'NR=='$i' {print $N}' )"
+i=$((i+1))
+done < <(ifconfig -a|grep eth )
+
+b=0
+n=$((i-2))
+
+if [ $n -gt $b ]; then
+	echo $'source /etc/network/interfaces.d/*\nauto lo\niface lo inet loopback' > /etc/network/interfaces
+	for (( m=0; m<=$n; m++ ))
+	do
+		echo "allow-hotplug eth${m}" >> /etc/network/interfaces
+		echo "iface eth${m} inet dhcp" >> /etc/network/interfaces
+	done
+fi
+
+/etc/init.d/networking restart
